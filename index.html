@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borang Tempahan Scones & Puding Diraja</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Playfair Display -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfbf7;
+        }
+        .font-royal {
+            font-family: 'Playfair Display', serif;
+        }
+        /* Animasi lembut untuk notifikasi */
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-enter {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        /* Hilangkan anak panah default input number */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+</head>
+<body class="text-stone-800 antialiased selection:bg-amber-200 selection:text-amber-900">
+
+    <!-- Header / Banner -->
+    <header class="bg-gradient-to-r from-amber-900 via-amber-800 to-yellow-800 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="text-center md:text-left">
+                <span class="inline-block py-1 px-3 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-200 text-xs font-semibold tracking-wider uppercase mb-2">
+                    <i class="fas fa-crown mr-1"></i> Sajian Istimewa Pahang & Klasik
+                </span>
+                <h1 class="font-royal text-3xl sm:text-4xl font-bold tracking-tight text-amber-50">
+                    Tempahan Scones & Puding Diraja
+                </h1>
+                <p class="mt-1 text-amber-200/90 text-sm sm:text-base">
+                    Isi maklumat tempahan di bawah. Jumlah bayaran dikira secara automatik.
+                </p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="toggleModal('googleSheetModal')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium py-2.5 px-4 rounded-xl shadow transition flex items-center gap-2 cursor-pointer">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Auto-Simpan Google Sheets</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Kandungan Utama -->
+    <main class="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+
+        <!-- Bahagian Atas: Borang Tempahan & Ringkasan Bayaran -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Kolum Kiri: Borang Input (7 Kolum) -->
+            <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-amber-100 p-6 sm:p-8">
+                <h2 class="text-xl font-bold text-stone-800 border-b border-stone-100 pb-4 mb-6 flex items-center gap-2">
+                    <i class="fas fa-edit text-amber-600"></i> Maklumat Penempah & Item
+                </h2>
+
+                <form id="orderForm" onsubmit="handleOrderSubmit(event)" class="space-y-6">
+                    <!-- Maklumat Pelanggan -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="customerName" class="block text-sm font-semibold text-stone-700 mb-1">Nama Penempah <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                <input type="text" id="customerName" required placeholder="Contoh: Ahmad bin Ali"
+                                    class="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="customerPhone" class="block text-sm font-semibold text-stone-700 mb-1">No. Telefon (WhatsApp)</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400">
+                                    <i class="fas fa-phone"></i>
+                                </span>
+                                <input type="tel" id="customerPhone" placeholder="Contoh: 012-3456789"
+                                    class="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Senarai Item Tempahan -->
+                    <div class="space-y-4">
+                        <label class="block text-sm font-semibold text-stone-700">Pilih Kuantiti Tempahan:</label>
+
+                        <!-- Kumpulan SCONES -->
+                        <div class="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 space-y-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200/60 pb-2">
+                                <span class="font-bold text-amber-900 flex items-center gap-2">
+                                    <i class="fas fa-cookie-bite text-amber-600"></i> SCONES (Set / Kotak)
+                                </span>
+                                <span class="text-xs font-semibold bg-amber-600 text-white px-2.5 py-1 rounded-full shadow-xs">
+                                    <i class="far fa-calendar-alt mr-1"></i> Tarikh Dapat: 3 Nov 2026
+                                </span>
+                            </div>
+
+                            <!-- Item 1: Scones Original -->
+                            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-stone-100 shadow-xs">
+                                <div>
+                                    <h4 class="font-semibold text-stone-800">Scones - Original</h4>
+                                    <p class="text-sm font-bold text-amber-700">RM 23.00</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="updateQty('qtyOriginal', -1)" class="w-9 h-9 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold flex items-center justify-center transition cursor-pointer">-</button>
+                                    <input type="number" id="qtyOriginal" value="0" min="0" oninput="calculateTotal()" class="w-12 text-center font-bold text-stone-800 bg-transparent border-b border-stone-300 focus:border-amber-500 outline-none">
+                                    <button type="button" onclick="updateQty('qtyOriginal', 1)" class="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold flex items-center justify-center transition cursor-pointer">+</button>
+                                </div>
+                            </div>
+
+                            <!-- Item 2: Scones Choc Chip -->
+                            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-stone-100 shadow-xs">
+                                <div>
+                                    <h4 class="font-semibold text-stone-800">Scones - Choc Chip</h4>
+                                    <p class="text-sm font-bold text-amber-700">RM 25.00</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="updateQty('qtyChoc', -1)" class="w-9 h-9 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold flex items-center justify-center transition cursor-pointer">-</button>
+                                    <input type="number" id="qtyChoc" value="0" min="0" oninput="calculateTotal()" class="w-12 text-center font-bold text-stone-800 bg-transparent border-b border-stone-300 focus:border-amber-500 outline-none">
+                                    <button type="button" onclick="updateQty('qtyChoc', 1)" class="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold flex items-center justify-center transition cursor-pointer">+</button>
+                                </div>
+                            </div>
+
+                            <!-- Item 3: Scones Mix -->
+                            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-stone-100 shadow-xs">
+                                <div>
+                                    <h4 class="font-semibold text-stone-800">Scones - Mix (Campur)</h4>
+                                    <p class="text-sm font-bold text-amber-700">RM 25.00</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="updateQty('qtyMix', -1)" class="w-9 h-9 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold flex items-center justify-center transition cursor-pointer">-</button>
+                                    <input type="number" id="qtyMix" value="0" min="0" oninput="calculateTotal()" class="w-12 text-center font-bold text-stone-800 bg-transparent border-b border-stone-300 focus:border-amber-500 outline-none">
+                                    <button type="button" onclick="updateQty('qtyMix', 1)" class="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold flex items-center justify-center transition cursor-pointer">+</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kumpulan PUDING DIRAJA -->
+                        <div class="bg-yellow-50/80 border border-yellow-300/80 rounded-2xl p-4 space-y-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-yellow-200 pb-2">
+                                <span class="font-bold text-yellow-900 flex items-center gap-2">
+                                    <i class="fas fa-crown text-yellow-600"></i> PUDING DIRAJA
+                                </span>
+                                <span class="text-xs font-semibold bg-yellow-600 text-white px-2.5 py-1 rounded-full shadow-xs">
+                                    <i class="far fa-calendar-alt mr-1"></i> Tarikh Dapat: 26 Nov 2026
+                                </span>
+                            </div>
+
+                            <!-- Item 4: Puding Diraja -->
+                            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-stone-100 shadow-xs">
+                                <div>
+                                    <h4 class="font-semibold text-stone-800">Puding Diraja (Pek)</h4>
+                                    <p class="text-sm font-bold text-yellow-700">RM 10.00</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="updateQty('qtyPuding', -1)" class="w-9 h-9 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold flex items-center justify-center transition cursor-pointer">-</button>
+                                    <input type="number" id="qtyPuding" value="0" min="0" oninput="calculateTotal()" class="w-12 text-center font-bold text-stone-800 bg-transparent border-b border-stone-300 focus:border-yellow-500 outline-none">
+                                    <button type="button" onclick="updateQty('qtyPuding', 1)" class="w-9 h-9 rounded-lg bg-yellow-100 hover:bg-yellow-200 text-yellow-900 font-bold flex items-center justify-center transition cursor-pointer">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Butang Hantar -->
+                    <div class="pt-2 flex flex-col sm:flex-row gap-3">
+                        <button type="submit" class="flex-1 bg-amber-700 hover:bg-amber-800 text-white font-bold py-3.5 px-6 rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Simpan Tempahan ke Jadual</span>
+                        </button>
+                        <button type="button" onclick="resetForm()" class="py-3.5 px-5 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-100 font-medium transition cursor-pointer">
+                            Reset
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Kolum Kanan: Paparan Item Tempahan & Jumlah Bayaran (5 Kolum) -->
+            <div class="lg:col-span-5">
+                <div class="bg-stone-900 text-stone-100 rounded-2xl shadow-xl p-6 sm:p-8 sticky top-6 border border-stone-800">
+                    <div class="flex items-center justify-between border-b border-stone-700 pb-4 mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2">
+                                <i class="fas fa-receipt"></i> Ringkasan Bayaran
+                            </h3>
+                            <p class="text-xs text-stone-400 mt-0.5">Paparan langsung item yang dipilih</p>
+                        </div>
+                        <span id="badgeTotalItems" class="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold px-3 py-1 rounded-full">
+                            0 Item
+                        </span>
+                    </div>
+
+                    <!-- Senarai Item Dinamik -->
+                    <div id="receiptItemsList" class="space-y-3 min-h-[180px] flex flex-col justify-center">
+                        <div class="text-center text-stone-500 py-8">
+                            <i class="fas fa-shopping-basket text-3xl mb-2 opacity-50"></i>
+                            <p class="text-sm">Belum ada item dipilih.</p>
+                            <p class="text-xs mt-1">Sila tambah kuantiti Scones atau Puding Diraja.</p>
+                        </div>
+                    </div>
+
+                    <!-- Garis Pemisah Resit -->
+                    <div class="border-t border-dashed border-stone-700 my-6"></div>
+
+                    <!-- Jumlah Keseluruhan -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm text-stone-400">
+                            <span>Penempah:</span>
+                            <span id="previewName" class="font-medium text-stone-200">-</span>
+                        </div>
+                        <div class="flex justify-between items-end pt-2">
+                            <span class="text-base font-semibold text-stone-300">JUMLAH PERLU DIBAYAR</span>
+                            <span id="grandTotalDisplay" class="text-3xl font-extrabold text-amber-400 tracking-tight">
+                                RM 0.00
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Butang Salin Ringkasan WhatsApp -->
+                    <button type="button" onclick="copyReceiptToClipboard()" class="mt-6 w-full bg-stone-800 hover:bg-stone-700 border border-stone-700 text-stone-200 text-sm font-medium py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fab fa-whatsapp text-emerald-400 text-lg"></i>
+                        <span>Salin Info Bayaran (Untuk WhatsApp)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bahagian Bawah: Jadual Rekod Tempahan (Format Spreadsheet) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+            <div class="p-6 border-b border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stone-50/70">
+                <div>
+                    <h2 class="text-xl font-bold text-stone-800 flex items-center gap-2">
+                        <i class="fas fa-table text-emerald-600"></i> Rekod Tempahan (Paparan Spreadsheet)
+                    </h2>
+                    <p class="text-sm text-stone-500 mt-0.5">
+                        Susunan lajur mengikut format spreadsheet anda. Klik butang eksport untuk muat turun fail Excel/CSV.
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-2.5 px-4 rounded-xl shadow-xs transition flex items-center gap-2 cursor-pointer">
+                        <i class="fas fa-download"></i>
+                        <span>Muat Turun Spreadsheet (.CSV)</span>
+                    </button>
+                    <button onclick="clearAllRecords()" class="bg-red-50 hover:bg-red-100 text-red-600 text-sm font-medium py-2.5 px-3.5 rounded-xl border border-red-200 transition cursor-pointer" title="Padam Semua Rekod">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Jadual Responsif -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left border-collapse">
+                    <thead>
+                        <!-- Baris Header Kategori (Sama seperti gambar spreadsheet anda) -->
+                        <tr class="text-center font-bold border-b border-stone-300">
+                            <th rowspan="3" class="p-3 bg-stone-100 border-r border-stone-300 text-stone-700 w-12">BIL</th>
+                            <th rowspan="2" class="p-3 bg-stone-100 border-r border-stone-300 text-left text-stone-800 min-w-[180px]">MAKLUMAT PENEMPAH</th>
+                            <th colspan="3" class="p-2.5 bg-[#fce599] border-r border-stone-300 text-stone-900 tracking-wide">SCONES</th>
+                            <th rowspan="2" class="p-2.5 bg-[#f1c232] border-r border-stone-300 text-stone-900 min-w-[120px]">PUDING DIRAJA</th>
+                            <th rowspan="2" class="p-2.5 bg-stone-100 border-r border-stone-300 text-stone-900 min-w-[110px]">TOTAL (RM)</th>
+                            <th rowspan="3" class="p-3 bg-stone-100 text-stone-700 w-16">AKSI</th>
+                        </tr>
+                        <!-- Baris Header Perisa -->
+                        <tr class="text-center font-bold border-b border-stone-300 text-xs">
+                            <th class="p-2 bg-[#fff2cc] border-r border-stone-300 text-stone-800">ORIGINAL</th>
+                            <th class="p-2 bg-[#783f04] border-r border-stone-300 text-white">CHOC CHIP</th>
+                            <th class="p-2 bg-[#ea9999] border-r border-stone-300 text-stone-900">MIX</th>
+                        </tr>
+                        <!-- Baris Header Harga -->
+                        <tr class="text-center font-semibold border-b-2 border-stone-400 text-xs">
+                            <th class="p-2 bg-stone-50 border-r border-stone-300 text-right text-stone-600">HARGA SEUNIT:</th>
+                            <th class="p-2 bg-[#ead1dc] border-r border-stone-300 text-stone-900">RM 23.00</th>
+                            <th class="p-2 bg-[#ead1dc] border-r border-stone-300 text-stone-900">RM 25.00</th>
+                            <th class="p-2 bg-[#ead1dc] border-r border-stone-300 text-stone-900">RM 25.00</th>
+                            <th class="p-2 bg-[#ead1dc] border-r border-stone-300 text-stone-900">RM 10.00</th>
+                            <th class="p-2 bg-stone-50 border-r border-stone-300 text-stone-700">JUMLAH</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsTableBody" class="divide-y divide-stone-200">
+                        <!-- Rekod akan dimasukkan di sini oleh JavaScript -->
+                    </tbody>
+                    <tfoot id="recordsTableFoot" class="bg-amber-50/80 font-bold border-t-2 border-stone-400 text-stone-900">
+                        <tr>
+                            <td colspan="2" class="p-3 text-right border-r border-stone-300">JUMLAH KESELURUHAN:</td>
+                            <td id="sumOriginal" class="p-3 text-center border-r border-stone-300">0</td>
+                            <td id="sumChoc" class="p-3 text-center border-r border-stone-300">0</td>
+                            <td id="sumMix" class="p-3 text-center border-r border-stone-300">0</td>
+                            <td id="sumPuding" class="p-3 text-center border-r border-stone-300">0</td>
+                            <td id="sumGrandTotal" class="p-3 text-right border-r border-stone-300 text-emerald-700 text-base">RM 0.00</td>
+                            <td class="p-3"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Panduan Sambungan Google Sheets -->
+    <div id="googleSheetModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 sm:p-8">
+            <div class="flex items-center justify-between border-b border-stone-200 pb-4 mb-4">
+                <h3 class="text-xl font-bold text-stone-800 flex items-center gap-2">
+                    <i class="fas fa-table text-emerald-600"></i> Cara Simpan Terus ke Google Sheets
+                </h3>
+                <button onclick="toggleModal('googleSheetModal')" class="text-stone-400 hover:text-stone-700 text-xl cursor-pointer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 text-sm text-stone-600">
+                <p>Anda mempunyai <strong>2 cara</strong> untuk menyimpan rekod ke dalam Spreadsheet:</p>
+                
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                    <h4 class="font-bold text-emerald-900 mb-1">Cara 1: Eksport Fail CSV (Paling Mudah)</h4>
+                    <p class="text-emerald-800">Klik butang hijau <strong>"Muat Turun Spreadsheet (.CSV)"</strong> di jadual bawah. Fail tersebut boleh terus dibuka menggunakan Microsoft Excel atau dimuat naik (Import) ke dalam Google Sheets anda.</p>
+                </div>
+
+                <div class="bg-stone-50 border border-stone-200 rounded-xl p-4 space-y-3">
+                    <h4 class="font-bold text-stone-800">Cara 2: Sambungan Automatik (Google Apps Script)</h4>
+                    <p>Jika anda mahu setiap tempahan terus masuk ke Google Sheets dalam gambar anda secara automatik:</p>
+                    <ol class="list-decimal list-inside space-y-1.5 text-stone-700">
+                        <li>Buka Google Sheets anda, klik menu <strong>Extensions > Apps Script</strong>.</li>
+                        <li>Padam kod sedia ada dan tampal kod skrip di bawah:</li>
+                    </ol>
+                    <div class="relative">
+                        <pre id="appsScriptCode" class="bg-stone-900 text-amber-200 p-3 rounded-lg text-xs overflow-x-auto">function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  sheet.appendRow([
+    data.nama + " (" + data.telefon + ")",
+    data.original,
+    data.choc,
+    data.mix,
+    data.puding,
+    data.total
+  ]);
+  return ContentService.createTextOutput("Berjaya");
+}</pre>
+                        <button onclick="copyScriptCode()" class="absolute top-2 right-2 bg-stone-700 hover:bg-stone-600 text-white text-xs px-2.5 py-1 rounded cursor-pointer">
+                            Salin Kod
+                        </button>
+                    </div>
+                    <ol start="3" class="list-decimal list-inside space-y-1.5 text-stone-700">
+                        <li>Klik <strong>Deploy > New deployment</strong>, pilih jenis <strong>Web app</strong>, set akses kepada <strong>Anyone</strong>, dan salin URL Web App tersebut.</li>
+                        <li>Tampal URL Web App tersebut di ruangan bawah ini:</li>
+                    </ol>
+                    <div class="flex gap-2 pt-1">
+                        <input type="url" id="webhookUrlInput" placeholder="https://script.google.com/macros/s/..." class="flex-1 px-3 py-2 border border-stone-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <button onclick="saveWebhookUrl()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg text-xs cursor-pointer">
+                            Simpan URL
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2"></div>
+
+    <script>
+        // Konfigurasi Harga Seunit (Mengikut Gambar Spreadsheet)
+        const PRICES = {
+            original: 23.00,
+            choc: 25.00,
+            mix: 25.00,
+            puding: 10.00
+        };
+
+        // Simpanan Rekod dalam Sesi Semasa
+        let ordersList = [];
+        let googleSheetWebhookUrl = "";
+
+        // Kemaskini nama penempah pada paparan resit secara langsung
+        document.getElementById('customerName').addEventListener('input', function(e) {
+            const val = e.target.value.trim();
+            document.getElementById('previewName').textContent = val || '-';
+        });
+
+        // Fungsi butang + dan - kuantiti
+        function updateQty(inputId, change) {
+            const input = document.getElementById(inputId);
+            let currentVal = parseInt(input.value) || 0;
+            let newVal = currentVal + change;
+            if (newVal < 0) newVal = 0;
+            input.value = newVal;
+            calculateTotal();
+        }
+
+        // Fungsi mengira dan memaparkan ringkasan tempahan & jumlah bayaran
+        function calculateTotal() {
+            const qtyOriginal = Math.max(0, parseInt(document.getElementById('qtyOriginal').value) || 0);
+            const qtyChoc = Math.max(0, parseInt(document.getElementById('qtyChoc').value) || 0);
+            const qtyMix = Math.max(0, parseInt(document.getElementById('qtyMix').value) || 0);
+            const qtyPuding = Math.max(0, parseInt(document.getElementById('qtyPuding').value) || 0);
+
+            const subOriginal = qtyOriginal * PRICES.original;
+            const subChoc = qtyChoc * PRICES.choc;
+            const subMix = qtyMix * PRICES.mix;
+            const subPuding = qtyPuding * PRICES.puding;
+
+            const grandTotal = subOriginal + subChoc + subMix + subPuding;
+            const totalItems = qtyOriginal + qtyChoc + qtyMix + qtyPuding;
+
+            // Kemaskini Paparan Jumlah
+            document.getElementById('grandTotalDisplay').textContent = `RM ${grandTotal.toFixed(2)}`;
+            document.getElementById('badgeTotalItems').textContent = `${totalItems} Item`;
+
+            // Kemaskini Senarai Item dalam Resit
+            const receiptContainer = document.getElementById('receiptItemsList');
+            
+            if (totalItems === 0) {
+                receiptContainer.innerHTML = `
+                    <div class="text-center text-stone-500 py-8">
+                        <i class="fas fa-shopping-basket text-3xl mb-2 opacity-50"></i>
+                        <p class="text-sm">Belum ada item dipilih.</p>
+                        <p class="text-xs mt-1">Sila tambah kuantiti Scones atau Puding Diraja.</p>
+                    </div>
+                `;
+                return { qtyOriginal, qtyChoc, qtyMix, qtyPuding, grandTotal, totalItems };
+            }
+
+            let itemsHTML = '';
+            if (qtyOriginal > 0) {
+                itemsHTML += createReceiptRow('Scones - Original', qtyOriginal, PRICES.original, subOriginal, '3 Nov 2026');
+            }
+            if (qtyChoc > 0) {
+                itemsHTML += createReceiptRow('Scones - Choc Chip', qtyChoc, PRICES.choc, subChoc, '3 Nov 2026');
+            }
+            if (qtyMix > 0) {
+                itemsHTML += createReceiptRow('Scones - Mix', qtyMix, PRICES.mix, subMix, '3 Nov 2026');
+            }
+            if (qtyPuding > 0) {
+                itemsHTML += createReceiptRow('Puding Diraja', qtyPuding, PRICES.puding, subPuding, '26 Nov 2026');
+            }
+
+            receiptContainer.innerHTML = itemsHTML;
+            return { qtyOriginal, qtyChoc, qtyMix, qtyPuding, grandTotal, totalItems };
+        }
+
+        function createReceiptRow(name, qty, unitPrice, subtotal, deliveryDate) {
+            return `
+                <div class="flex items-center justify-between bg-stone-800/80 p-3 rounded-xl border border-stone-700/70">
+                    <div>
+                        <p class="font-semibold text-stone-100 text-sm">${name}</p>
+                        <p class="text-xs text-stone-400">${qty} x RM ${unitPrice.toFixed(2)}</p>
+                        <p class="text-[11px] text-amber-400/90 mt-0.5"><i class="far fa-calendar-check mr-1"></i>Dapat: ${deliveryDate}</p>
+                    </div>
+                    <span class="font-bold text-amber-300">RM ${subtotal.toFixed(2)}</span>
+                </div>
+            `;
+        }
+
+        // Hantar Borang & Simpan ke Jadual Rekod
+        async function handleOrderSubmit(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const summary = calculateTotal();
+
+            if (!name) {
+                showToast('Sila masukkan nama penempah.', 'error');
+                return;
+            }
+
+            if (summary.totalItems === 0) {
+                showToast('Sila pilih sekurang-kurangnya 1 item tempahan.', 'error');
+                return;
+            }
+
+            const newOrder = {
+                id: Date.now(),
+                timestamp: new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' }),
+                name: name,
+                phone: phone,
+                original: summary.qtyOriginal,
+                choc: summary.qtyChoc,
+                mix: summary.qtyMix,
+                puding: summary.qtyPuding,
+                total: summary.grandTotal
+            };
+
+            ordersList.push(newOrder);
+            renderTable();
+
+            // Jika pengguna telah menetapkan URL Google Apps Script, hantar data secara automatik
+            if (googleSheetWebhookUrl) {
+                try {
+                    fetch(googleSheetWebhookUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            nama: newOrder.name,
+                            telefon: newOrder.phone || '-',
+                            original: newOrder.original,
+                            choc: newOrder.choc,
+                            mix: newOrder.mix,
+                            puding: newOrder.puding,
+                            total: `RM ${newOrder.total.toFixed(2)}`
+                        })
+                    });
+                    showToast('Tempahan disimpan & dihantar ke Google Sheets!', 'success');
+                } catch (err) {
+                    showToast('Disimpan dalam jadual, tetapi gagal hantar ke Google Sheets.', 'error');
+                }
+            } else {
+                showToast(`Tempahan untuk ${name} berjaya direkodkan!`, 'success');
+            }
+
+            resetForm();
+        }
+
+        // Paparkan Rekod dalam Jadual Spreadsheet
+        function renderTable() {
+            const tbody = document.getElementById('recordsTableBody');
+            
+            if (ordersList.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="p-8 text-center text-stone-400">
+                            Tiada rekod tempahan lagi. Isi borang di atas untuk menambah rekod.
+                        </td>
+                    </tr>
+                `;
+                updateFooterTotals(0, 0, 0, 0, 0);
+                return;
+            }
+
+            let html = '';
+            let sumOrig = 0, sumChoc = 0, sumMix = 0, sumPud = 0, sumTotal = 0;
+
+            ordersList.forEach((order, index) => {
+                sumOrig += order.original;
+                sumChoc += order.choc;
+                sumMix += order.mix;
+                sumPud += order.puding;
+                sumTotal += order.total;
+
+                html += `
+                    <tr class="hover:bg-amber-50/40 transition">
+                        <td class="p-3 text-center font-medium text-stone-500 border-r border-stone-200">${index + 1}</td>
+                        <td class="p-3 border-r border-stone-200">
+                            <div class="font-bold text-stone-800">${escapeHtml(order.name)}</div>
+                            <div class="text-xs text-stone-500 flex flex-wrap gap-2 mt-0.5">
+                                ${order.phone ? `<span><i class="fas fa-phone-alt text-[10px]"></i> ${escapeHtml(order.phone)}</span>` : ''}
+                                <span><i class="far fa-clock text-[10px]"></i> ${order.timestamp}</span>
+                            </div>
+                        </td>
+                        <td class="p-3 text-center font-semibold border-r border-stone-200 ${order.original > 0 ? 'bg-amber-50/50 text-stone-900' : 'text-stone-300'}">${order.original || '-'}</td>
+                        <td class="p-3 text-center font-semibold border-r border-stone-200 ${order.choc > 0 ? 'bg-amber-50/50 text-stone-900' : 'text-stone-300'}">${order.choc || '-'}</td>
+                        <td class="p-3 text-center font-semibold border-r border-stone-200 ${order.mix > 0 ? 'bg-amber-50/50 text-stone-900' : 'text-stone-300'}">${order.mix || '-'}</td>
+                        <td class="p-3 text-center font-semibold border-r border-stone-200 ${order.puding > 0 ? 'bg-yellow-50/60 text-stone-900' : 'text-stone-300'}">${order.puding || '-'}</td>
+                        <td class="p-3 text-right font-bold text-stone-900 border-r border-stone-200">RM ${order.total.toFixed(2)}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="deleteOrder(${order.id})" class="text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition cursor-pointer" title="Padam baris ini">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+            updateFooterTotals(sumOrig, sumChoc, sumMix, sumPud, sumTotal);
+        }
+
+        function updateFooterTotals(orig, choc, mix, pud, total) {
+            document.getElementById('sumOriginal').textContent = orig;
+            document.getElementById('sumChoc').textContent = choc;
+            document.getElementById('sumMix').textContent = mix;
+            document.getElementById('sumPuding').textContent = pud;
+            document.getElementById('sumGrandTotal').textContent = `RM ${total.toFixed(2)}`;
+        }
+
+        function deleteOrder(id) {
+            ordersList = ordersList.filter(item => item.id !== id);
+            renderTable();
+            showToast('Rekod tempahan dipadam.', 'info');
+        }
+
+        function clearAllRecords() {
+            if (ordersList.length === 0) return;
+            ordersList = [];
+            renderTable();
+            showToast('Semua rekod telah dikosongkan.', 'info');
+        }
+
+        function resetForm() {
+            document.getElementById('orderForm').reset();
+            document.getElementById('qtyOriginal').value = 0;
+            document.getElementById('qtyChoc').value = 0;
+            document.getElementById('qtyMix').value = 0;
+            document.getElementById('qtyPuding').value = 0;
+            document.getElementById('previewName').textContent = '-';
+            calculateTotal();
+        }
+
+        // Fungsi Eksport ke Fail CSV (Boleh dibuka terus di Excel / Google Sheets)
+        function exportToCSV() {
+            if (ordersList.length === 0) {
+                showToast('Tiada rekod untuk dieksport ke spreadsheet.', 'error');
+                return;
+            }
+
+            // Struktur baris CSV mengikut susunan jadual spreadsheet
+            const rows = [
+                ['', '', 'SCONES', '', '', 'PUDING DIRAJA', 'TOTAL'],
+                ['BIL', 'PENEMPAH', 'ORIGINAL', 'CHOC CHIP', 'MIX', 'PUDING DIRAJA', 'JUMLAH (RM)', 'NO TELEFON'],
+                ['', 'HARGA SEUNIT', '23.00', '25.00', '25.00', '10.00', '', '']
+            ];
+
+            let sumOrig = 0, sumChoc = 0, sumMix = 0, sumPud = 0, sumTotal = 0;
+
+            ordersList.forEach((o, i) => {
+                sumOrig += o.original;
+                sumChoc += o.choc;
+                sumMix += o.mix;
+                sumPud += o.puding;
+                sumTotal += o.total;
+
+                rows.push([
+                    i + 1,
+                    `"${o.name.replace(/"/g, '""')}"`,
+                    o.original,
+                    o.choc,
+                    o.mix,
+                    o.puding,
+                    o.total.toFixed(2),
+                    `"${o.phone || ''}"`
+                ]);
+            });
+
+            // Baris Jumlah Keseluruhan
+            rows.push([
+                '',
+                'JUMLAH KESELURUHAN',
+                sumOrig,
+                sumChoc,
+                sumMix,
+                sumPud,
+                sumTotal.toFixed(2),
+                ''
+            ]);
+
+            const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + rows.map(e => e.join(",")).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            const dateStr = new Date().toISOString().slice(0, 10);
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Rekod_Tempahan_Scones_Puding_${dateStr}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('Fail Spreadsheet (.CSV) berjaya dimuat turun!', 'success');
+        }
+
+        // Salin Ringkasan Resit ke Clipboard
+        function copyReceiptToClipboard() {
+            const name = document.getElementById('customerName').value.trim() || 'Pelanggan';
+            const summary = calculateTotal();
+
+            if (summary.totalItems === 0) {
+                showToast('Pilih item terlebih dahulu untuk disalin.', 'error');
+                return;
+            }
+
+            let text = `*TEMPAHAN SCONES & PUDING DIRAJA*\n`;
+            text += `Nama: ${name}\n`;
+            text += `----------------------------\n`;
+            if (summary.qtyOriginal > 0) text += `• Scones Original (${summary.qtyOriginal}x) : RM ${(summary.qtyOriginal * PRICES.original).toFixed(2)} [Dapat: 3 Nov 2026]\n`;
+            if (summary.qtyChoc > 0) text += `• Scones Choc Chip (${summary.qtyChoc}x) : RM ${(summary.qtyChoc * PRICES.choc).toFixed(2)} [Dapat: 3 Nov 2026]\n`;
+            if (summary.qtyMix > 0) text += `• Scones Mix (${summary.qtyMix}x) : RM ${(summary.qtyMix * PRICES.mix).toFixed(2)} [Dapat: 3 Nov 2026]\n`;
+            if (summary.qtyPuding > 0) text += `• Puding Diraja (${summary.qtyPuding}x) : RM ${(summary.qtyPuding * PRICES.puding).toFixed(2)} [Dapat: 26 Nov 2026]\n`;
+            text += `----------------------------\n`;
+            text += `*JUMLAH BAYARAN: RM ${summary.grandTotal.toFixed(2)}*`;
+
+            copyTextFallback(text, 'Ringkasan tempahan berjaya disalin!');
+        }
+
+        function copyScriptCode() {
+            const code = document.getElementById('appsScriptCode').innerText;
+            copyTextFallback(code, 'Kod Apps Script disalin!');
+        }
+
+        function copyTextFallback(text, successMsg) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast(successMsg, 'success');
+            } catch (err) {
+                showToast('Gagal menyalin teks.', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function saveWebhookUrl() {
+            const url = document.getElementById('webhookUrlInput').value.trim();
+            if (!url) {
+                showToast('Sila masukkan URL Web App yang sah.', 'error');
+                return;
+            }
+            googleSheetWebhookUrl = url;
+            toggleModal('googleSheetModal');
+            showToast('Sambungan Google Sheets diaktifkan!', 'success');
+        }
+
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('hidden');
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const colors = {
+                success: 'bg-emerald-800 text-white border-emerald-600',
+                error: 'bg-red-800 text-white border-red-600',
+                info: 'bg-stone-800 text-white border-stone-600'
+            };
+
+            const icons = {
+                success: 'fa-check-circle text-emerald-400',
+                error: 'fa-exclamation-circle text-red-400',
+                info: 'fa-info-circle text-amber-400'
+            };
+
+            toast.className = `toast-enter flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium ${colors[type]}`;
+            toast.innerHTML = `<i class="fas ${icons[type]}"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Mulakan paparan awal
+        renderTable();
+    </script>
+</body>
+</html>
