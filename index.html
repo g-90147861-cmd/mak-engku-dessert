@@ -384,7 +384,7 @@
 
         // Simpanan Rekod dalam Sesi Semasa
         let ordersList = [];
-        let googleSheetWebhookUrl = "";
+        let googleSheetWebhookUrl = "https://script.google.com/macros/s/AKfycbzJ7WbOhXVjjEFEmkpwPEEGsgDqKtp1Vg3jDVSyZDSS_HMIDkg_g2LaEFTLjts_XGChSw/exec";
 
         // Kemaskini nama penempah pada paparan resit secara langsung
         document.getElementById('customerName').addEventListener('input', function(e) {
@@ -502,10 +502,10 @@
             // Jika pengguna telah menetapkan URL Google Apps Script, hantar data secara automatik
             if (googleSheetWebhookUrl) {
                 try {
-                    fetch(googleSheetWebhookUrl, {
+                    await fetch(googleSheetWebhookUrl, {
                         method: 'POST',
                         mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
                         body: JSON.stringify({
                             nama: newOrder.name,
                             telefon: newOrder.phone || '-',
@@ -516,7 +516,7 @@
                             total: `RM ${newOrder.total.toFixed(2)}`
                         })
                     });
-                    showToast('Tempahan disimpan & dihantar ke Google Sheets!', 'success');
+                    showToast('Tempahan telah dihantar. Pengesahan simpanan perlu disemak dalam Google Sheets.', 'success');
                 } catch (err) {
                     showToast('Disimpan dalam jadual, tetapi gagal hantar ke Google Sheets.', 'error');
                 }
